@@ -1,38 +1,27 @@
-# ModernCppErrorHandling/CMakeLists.txt
-cmake_minimum_required(VERSION 3.20)
-project(ModernCppErrorHandling LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.14)
+project(ModernCppErrorHandling)
 
+# Require C++23 for std::expected
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# ── Fetch Catch2 v3 (header-only) ───────────────────────────────────
+# Configure testing
+enable_testing()
+
+# Download and setup GoogleTest
 include(FetchContent)
 FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY  https://github.com/catchorg/Catch2.git
-  GIT_TAG         v3.5.4
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG release-1.14.0
 )
-FetchContent_MakeAvailable(Catch2)
+FetchContent_MakeAvailable(googletest)
 
-# ── Pipeline library (implementation you copied from the assignment) ─
-add_library(pipeline STATIC
-  src/pipeline.cpp
-)
-target_include_directories(pipeline PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
+# Build tests executable
+add_executable(pipeline_tests tests/pipeline_error_handling_test.cpp)
+target_link_libraries(pipeline_tests PRIVATE gtest_main stdc++fs)  # Added stdc++fs
+target_compile_features(pipeline_tests PRIVATE cxx_std_23)
 
-# ── Unit tests ─────────────────────────────────────────────────────
-add_executable(pipeline_tests
-  tests/pipeline_error_handling_test.cpp
-)
-target_link_libraries(pipeline_tests
-  PRIVATE
-    pipeline
-    Catch2::Catch2WithMain
-)
-
-include(CTest)
-include(Catch)
-catch_discover_tests(pipeline_tests)
+# Add test target
+add_test(NAME PipelineTests COMMAND pipeline_tests)
